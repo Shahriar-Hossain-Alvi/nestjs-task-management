@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
   fullName String
   phone String
   email String @unique
@@ -25,11 +25,11 @@ model User {
 }
 
 model Task {
-  id String @id @default(uuid())
+  id Int @id @default(autoincrement())
   title String
   status Status @default(PENDING)
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  user User @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
 }
 
