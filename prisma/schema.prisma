@@ -6,10 +6,42 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id String @id @default(uuid())
+  fullName String
+  phone String
+  email String @unique
+  password String
+  role Role @default(USER)
+  tasks Task[]
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id String @id @default(uuid())
+  title String
+  status Status @default(PENDING)
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
