@@ -7,9 +7,10 @@ import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
-    PassportModule,
+    PassportModule, // enables passport integration in NestJs
+    // configure jwt with secret and expiration
     JwtModule.register({
-      secret: 'super-secret', // will be in env
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '2d' },
     }),
   ],
