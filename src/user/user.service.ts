@@ -16,12 +16,7 @@ export class UserService {
 
   // get all users
   async findAll() {
-    return await this.prisma.user.findMany({
-      omit: {
-        password: true,
-        createdAt: true,
-      },
-    });
+    return await this.prisma.user.findMany();
   }
 
   // get one user
@@ -38,10 +33,10 @@ export class UserService {
       where: {
         id,
       },
-      omit: {
-        password: true,
-        createdAt: true,
-      },
+      // omit: {
+      //   password: true,
+      //   createdAt: true,
+      // },
       data: updateUserDto,
     });
   }
