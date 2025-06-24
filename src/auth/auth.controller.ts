@@ -19,7 +19,7 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard) // for protected routes
   @Get('me')
   getProfile(@Req() req: { user: User }) {
     return req.user;
