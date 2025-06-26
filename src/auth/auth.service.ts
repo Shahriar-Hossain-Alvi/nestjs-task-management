@@ -34,7 +34,7 @@ export class AuthService {
 
     if (!user) throw new BadRequestException('User already exists');
 
-    return { message: 'User registered successfully' };
+    return { message: `User ${user.email} registered successfully` };
   }
 
   // login a user
@@ -51,10 +51,19 @@ export class AuthService {
 
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
 
-    const payload = { id: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role };
 
     const token = await this.jwtService.signAsync(payload);
 
     return { access_token: token };
+  }
+
+  // get logged in user data
+  async getLoggedInUserData(userId: number) {
+    return await this.prisma.user.findUniqueOrThrow({
+      where: {
+        id: userId,
+      },
+    });
   }
 }

@@ -7,6 +7,8 @@ import {
   Delete,
   ParseIntPipe,
   UseGuards,
+  Req,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -16,6 +18,8 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { RolesGuard } from 'src/common/decorators/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { RequestWithUser } from 'src/common/interfaces/request-with-user.interface';
+import { filterUpdateFieldsByRole } from 'src/common/decorators/utils/user-field-filter';
 
 @Controller('user')
 export class UserController {
@@ -49,11 +53,26 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.USER)
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-    const updatedUser = this.userService.update(id, updateUserDto);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: RequestWithUser, // this is used to get user from request
+  ) {
+    const user = req.user;
+
+    // allow USER to update their own data
+    if (user.role === Role.USER && user.id !== id) {
+      throw new ForbiddenException('You do not have permission for this resource');
+    }
+
+    // filter fields by Role. This filteredData will return the full object if role is admin & will return selected fields if role is USER then is passed to userService
+    const filteredData = filterUpdateFieldsByRole(updateUserDto, user.role);
+
+    const updatedUser = this.userService.update(id, filteredData);
     return plainToInstance(UserEntity, updatedUser, { excludeExtraneousValues: true });
   }
 
+  // delete a user
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Delete(':id')
