@@ -24,6 +24,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // this function runs after jwt is verified and returns req.user value
   validate(payload: JwtPayload) {
-    return { id: payload.sub, email: payload.email, role: payload.role };
+    return { id: payload.sub, email: payload.email, role: payload.role }; // return user as req.user
   }
 }

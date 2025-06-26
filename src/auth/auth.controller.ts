@@ -4,6 +4,8 @@ import { RegisterAuthDto } from './dto/register-auth.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { User } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -21,7 +23,10 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard) // for protected routes
   @Get('me')
-  getProfile(@Req() req: { user: User }) {
-    return req.user;
+  async getProfile(@Req() req: { user: User }) {
+    const userId = req.user.id;
+    const fullUser = await this.authService.getLoggedInUserData(userId);
+
+    return plainToInstance(UserEntity, fullUser, { excludeExtraneousValues: true });
   }
 }
