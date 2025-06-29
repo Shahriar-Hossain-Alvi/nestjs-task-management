@@ -41,15 +41,16 @@ export class UserController {
     return plainToInstance(UserEntity, users, { excludeExtraneousValues: true });
   }
 
+  // get one user
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
-    // return this.userService.findOne(id);
     const user = this.userService.findOne(id);
     return plainToInstance(UserEntity, user, { excludeExtraneousValues: true });
   }
 
+  // update a user
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.USER)
   @Patch(':id')
@@ -58,14 +59,17 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @Req() req: RequestWithUser, // this is used to get user from request
   ) {
-    const user = req.user;
+    const user = req.user; // get current logged in user (jwt-strategy)
 
-    // allow USER to update their own data
+    console.log('Log request from user controller', user);
+    console.log('Log request body user controller', updateUserDto);
+
+    // prevent a user from updating another user
     if (user.role === Role.USER && user.id !== id) {
       throw new ForbiddenException('You do not have permission for this resource');
     }
 
-    // filter fields by Role. This filteredData will return the full object if role is admin & will return selected fields if role is USER then is passed to userService
+    // filteredData will return the full object if role is admin & return selected fields if role is USER
     const filteredData = filterUpdateFieldsByRole(updateUserDto, user.role);
 
     const updatedUser = this.userService.update(id, filteredData);
